@@ -1,0 +1,6 @@
+{"_id":"1","name":"Pithiviers","type":"TWN","parent":"2"}
+{"_id":"2","name":"Loiret","type":"DST","parent":"3"}
+{"_id":"3","name":"Région Centre - Val de Loire","type":"RGN","parent":"4"}
+{"_id":"4","name":"France","type":"CTY","parent":"5"}
+{"_id":"5","name":"Europe","type":"CTN"}
+{"_id":"6","name":"Givraines","type":"TWN","parent":"2"}

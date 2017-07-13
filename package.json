@@ -1,0 +1,45 @@
+{
+  "name": "grammi",
+  "version": "0.1.0",
+  "description": "Gestionnaire de généalogie",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon server.js",
+    "build": "rimraf dist && webpack --bail --progress --profile",
+    "postinstall": "typings install"
+  },
+  "author": "Loïc BAILLY",
+  "license": "MIT",
+  "dependencies": {
+    "angular": "^1.5.6",
+    "angular-route": "^1.5.3",
+    "body-parser": "^1.16.0",
+    "bootstrap": "^3.3.6",
+    "express": "^4.14.0",
+    "jquery": "^3.2.1",
+    "lodash": "^4.13.1",
+    "nedb": "^1.8.0",
+    "q": "^1.5.0"
+  },
+  "devDependencies": {
+    "concurrently": "^2.1.0",
+    "copy-webpack-plugin": "^3.0.1",
+    "css-loader": "^0.23.1",
+    "extract-text-webpack-plugin": "^1.0.1",
+    "file-loader": "^0.8.5",
+    "gulp": "^3.9.1",
+    "gulp-load-plugins": "^1.5.0",
+    "gulp-nodemon": "^2.2.1",
+    "html-loader": "^0.4.3",
+    "html-webpack-plugin": "^2.21.0",
+    "imports": "^1.0.0",
+    "ng-annotate-loader": "^0.1.0",
+    "raw-loader": "^0.5.1",
+    "rimraf": "^2.5.2",
+    "style-loader": "^0.13.1",
+    "ts-loader": "^2.2.2",
+    "typings": "^1.1.0",
+    "webpack": "^1.13.1",
+    "webpack-stream": "^3.2.0"
+  }
+}

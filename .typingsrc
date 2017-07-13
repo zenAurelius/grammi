@@ -1,0 +1,2 @@
+proxy="http://proxy-internet.societe.mma.fr:8080/"
+rejectUnauthorized=false 

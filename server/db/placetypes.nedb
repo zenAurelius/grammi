@@ -1,0 +1,5 @@
+{"_id":"1","type":"TWN","text":"Ville","lang":"fr_fr"}
+{"_id":"2","type":"DST","text":"Département","lang":"fr_fr"}
+{"_id":"3","type":"RGN","text":"Région","lang":"fr_fr"}
+{"_id":"4","type":"CTY","text":"Pays","lang":"fr_fr"}
+{"_id":"5","type":"CTN","text":"Continent","lang":"fr_fr"}
