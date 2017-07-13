@@ -11,7 +11,7 @@ var CopyWebpackPlugin = require('copy-webpack-plugin');
  * Get npm lifecycle event to identify the environment
  */
 var ENV = process.env.npm_lifecycle_event;
-var isProd = ENV === 'build';
+var isProd = false;
 
 module.exports = function makeWebpackConfig () {
     /**
@@ -77,7 +77,7 @@ module.exports = function makeWebpackConfig () {
             // Reference: https://github.com/TypeStrong/ts-loader
             // Runs ng-annotate on source files
             test: /\.ts$/,
-            loaders: ['ng-annotate?add=true', 'ts-loader'],
+            loaders: ['ng-annotate?add=true', 'ts'],
             exclude: /node_modules/
         }, {
             // css-loader
@@ -130,7 +130,7 @@ module.exports = function makeWebpackConfig () {
 
         // Reference: http://webpack.github.io/docs/list-of-plugins.html#uglifyjsplugin
         // Minify all javascript, switch loaders to minimizing mode
-        new webpack.optimize.UglifyJsPlugin(),
+        //new webpack.optimize.UglifyJsPlugin(),
 
         // Reference: https://webpack.github.io/docs/list-of-plugins.html#commonschunkplugin
         // Generates an extra output file which contains common modules (vendor in this case)
