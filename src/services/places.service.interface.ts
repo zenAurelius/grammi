@@ -2,4 +2,5 @@
 
 export interface IPlacesService {
 	getPlaces : any;
+	getContents(any) : any;
 }

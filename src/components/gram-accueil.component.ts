@@ -16,10 +16,12 @@ class PlacesCtrl {
 	
 	// ON INIT ************************************************************************************
 	$onInit() {
-		this.placesService.getPlaces().then((places) => {
+		this.placesService.getPlaces()
+		.then((places) => {
 			console.log(places);
 			this.places = places;
-		});
+		})
+		.catch(erreur => console.log(erreur));
 	}
 }
 

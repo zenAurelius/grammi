@@ -14,12 +14,56 @@ export class PlacesService implements IPlacesService {
 	public getPlaces() {
 		var deferred = this.$q.defer();
 		
-		this.$http.get('/api/places/roots').then(
-			function(response) { deferred.resolve(response.data) },
-			function(erreur) { deferred.reject(erreur) }
-		);
+		this.$http.get('/api/places/roots')
+		.then(response => { 
+			var i = response.data['places'].length;
+			response.data['places'].forEach( place => {
+				this.getContents(place._id)
+				.then(r => {
+					place.contents = r['places']
+					console.log(i);
+					if(--i == 0) {
+						console.log('vrai fin');
+						deferred.resolve(response.data)
+					}
+				})
+				.catch(erreur => deferred.reject(erreur));
+			})
+		})
+		.catch(erreur => deferred.reject(erreur));
+				
+		return deferred.promise;
+	}
+	
+	public getContents(id) {
+		var deferred = this.$q.defer();
 		
-		return deferred;
+		this.$http.get(`/api/places/place/${id}/places`)
+		.then( response => {
+			var i = response.data['places'].length;
+			if(i == 0) {
+				console.log('fin pour :');
+				console.log(id);
+				deferred.resolve(response.data);
+			}
+			response.data['places'].forEach( place => {
+				this.getContents(place._id)
+				.then(r => {
+					place.contents = r['places']
+					i--;
+					console.log(place._id + ' : ' + i);
+					if(i == 0) {
+						console.log('fin pour :');
+						console.log(place);
+						deferred.resolve(response.data);
+					}
+				})
+				.catch(erreur => deferred.reject(erreur));						
+			})
+		})
+		.catch(erreur => deferred.reject(erreur));
+		
+		return deferred.promise;
 	}
 	
 	
