@@ -1,6 +1,9 @@
 <div id="main" class="table">
     <div id="sidebar" class="cell">
-        MENU DU COTE
+        <ul>
+			<li ng-click="mainCtrl.goPlaces()">PLACES</li>
+			<li ng-click="mainCtrl.goSources()">SOURCES</li>
+		</ul>
     </div>
     <div id="content" class="cell">
         <div ng-view></div>

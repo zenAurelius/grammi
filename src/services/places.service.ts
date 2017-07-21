@@ -20,10 +20,8 @@ export class PlacesService implements IPlacesService {
 			response.data['places'].forEach( place => {
 				this.getContents(place._id)
 				.then(r => {
-					place.contents = r['places']
-					console.log(i);
+					place.contents = r['places'];
 					if(--i == 0) {
-						console.log('vrai fin');
 						deferred.resolve(response.data)
 					}
 				})
@@ -42,8 +40,6 @@ export class PlacesService implements IPlacesService {
 		.then( response => {
 			var i = response.data['places'].length;
 			if(i == 0) {
-				console.log('fin pour :');
-				console.log(id);
 				deferred.resolve(response.data);
 			}
 			response.data['places'].forEach( place => {
@@ -51,10 +47,7 @@ export class PlacesService implements IPlacesService {
 				.then(r => {
 					place.contents = r['places']
 					i--;
-					console.log(place._id + ' : ' + i);
 					if(i == 0) {
-						console.log('fin pour :');
-						console.log(place);
 						deferred.resolve(response.data);
 					}
 				})

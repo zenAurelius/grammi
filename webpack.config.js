@@ -36,11 +36,7 @@ module.exports = function makeWebpackConfig () {
         path: __dirname + '/public',
 
         // Filename format for entry points (hash added in build mode)
-        filename: isProd ? '[name].[hash].js' : '[name].bundle.js',
-
-        // Filename for non-entry points
-        // Only adds hash in build mode
-        chunkFilename: isProd ? '[name].[hash].js' : '[name].bundle.js'
+        filename: 'app.bundle.js',
     };
 
   /**
@@ -51,16 +47,6 @@ module.exports = function makeWebpackConfig () {
   }
 
     /**
-     * Reference: http://webpack.github.io/docs/configuration.html#devtool
-     * Type of sourcemap to use per build type
-     */
-    if (isProd) {
-        config.devtool = 'source-map';
-    } else {
-        config.devtool = 'eval-source-map';
-    }
-
-    /**
      * Loaders
      * Reference: http://webpack.github.io/docs/configuration.html#module-loaders
      * List: http://webpack.github.io/docs/list-of-loaders.html
@@ -69,15 +55,8 @@ module.exports = function makeWebpackConfig () {
     config.module = {
         preLoaders: [],
         loaders: [{
-            // ts-loader
-            // Reference: https://github.com/TypeStrong/ts-loader
-            // Transpile .ts files using TypeScript
-            //
-            // ng-annotate-loader
-            // Reference: https://github.com/TypeStrong/ts-loader
-            // Runs ng-annotate on source files
             test: /\.ts$/,
-            loaders: ['ng-annotate?add=true', 'ts'],
+            loaders: ['ts'],
             exclude: /node_modules/
         }, {
             // css-loader
@@ -134,27 +113,8 @@ module.exports = function makeWebpackConfig () {
 
         // Reference: https://webpack.github.io/docs/list-of-plugins.html#commonschunkplugin
         // Generates an extra output file which contains common modules (vendor in this case)
-        new webpack.optimize.CommonsChunkPlugin('vendor', config.output.filename)
+        new webpack.optimize.CommonsChunkPlugin('vendor', 'vendor.js')
     )
-
-    // Add build specific plugins
-    if (isProd) {
-        config.plugins.push(
-            // Reference: http://webpack.github.io/docs/list-of-plugins.html#noerrorsplugin
-            // Only emit files when there are no errors
-            new webpack.NoErrorsPlugin(),
-
-            // Reference: http://webpack.github.io/docs/list-of-plugins.html#dedupeplugin
-            // Dedupe modules in the output
-            new webpack.optimize.DedupePlugin(),
-
-            // Copy assets from the public folder
-            // Reference: https://github.com/kevlened/copy-webpack-plugin
-            new CopyWebpackPlugin([{
-                from: __dirname + '/client/public'
-            }])
-        );
-    }
 
     return config;
 }();

@@ -2,6 +2,7 @@
 var Q = require('q');
 var dbProvider = require('../utils/dbProvider');
 
+var placeService = require('./place.service');
 var service = {};
 
 service.get = get;
@@ -56,7 +57,15 @@ function get(id) {
 		if (err) deferred.reject(err);
  
         if (source) {
-            deferred.resolve(source);
+            if(source.placeid) {
+				placeService.get(source.placeid)
+				.then((place) => {
+					source.place = place;
+					deferred.resolve(source);
+				});
+			} else {
+				deferred.resolve(source);
+			}
         } else {
              deferred.reject();
         }
@@ -72,7 +81,23 @@ function getByRepo(id) {
 		if (err) deferred.reject(err);
  
         if (result) {
-            deferred.resolve(result);
+            //Completion de place
+			var i = result.length;
+			if (i == 0) {
+				deferred.resolve(result);
+			} else {
+				result.forEach(repo => {
+					if(repo.placeid) {
+						placeService.get(repo.placeid)
+						.then((place) => {
+							repo.place = place;
+							if(--i == 0) {deferred.resolve(result);}
+						});
+					} else {
+						if(--i == 0) {deferred.resolve(result);}
+					}
+				});
+			}
         } else {
              deferred.reject();
         }

@@ -2,6 +2,7 @@
 var Q = require('q');
 var dbProvider = require('../utils/dbProvider');
 
+var placeService = require('./place.service');
 var service = {};
 
 service.get = get;
@@ -25,7 +26,15 @@ function get(id) {
 		if (err) deferred.reject(err);
  
         if (result) {
-            deferred.resolve(result);
+           if(result.placeid) {
+				placeService.get(result.placeid)
+				.then((place) => {
+					result.place = place;
+					deferred.resolve(result);
+				});
+			} else {
+				deferred.resolve(result);
+			}
         } else {
              deferred.reject();
         }
@@ -41,7 +50,23 @@ function getByRepo(id) {
 		if (err) deferred.reject(err);
  
         if (result) {
-            deferred.resolve(result);
+            //Completion de place
+			var i = result.length;
+			if (i == 0) {
+				deferred.resolve(result);
+			} else {
+				result.forEach(repo => {
+					if(repo.placeid) {
+						placeService.get(repo.placeid)
+						.then((place) => {
+							repo.place = place;
+							if(--i == 0) {deferred.resolve(result);}
+						});
+					} else {
+						if(--i == 0) {deferred.resolve(result);}
+					}
+				});
+			}
         } else {
              deferred.reject();
         }
@@ -57,7 +82,23 @@ function getRoots() {
 		if (err) deferred.reject(err);
  
         if (result) {
-            deferred.resolve(result);
+			//Completion de place
+			var i = result.length;
+			if (i == 0) {
+				deferred.resolve(result);
+			} else {
+				result.forEach(repo => {
+					if(repo.placeid) {
+						placeService.get(repo.placeid)
+						.then((place) => {
+							repo.place = place;
+							if(--i == 0) {deferred.resolve(result);}
+						});
+					} else {
+						if(--i == 0) {deferred.resolve(result);}
+					}
+				});
+			}
         } else {
              deferred.reject();
         }
@@ -65,6 +106,7 @@ function getRoots() {
 	
 	return deferred.promise;
 }
+
 
 function getTypes() {
 	var deferred = Q.defer();
