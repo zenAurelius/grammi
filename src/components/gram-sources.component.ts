@@ -20,7 +20,7 @@ class SourcesCtrl {
 		this.sourcesService.getFullSources()
 		.then((sources) => {
 			this.sources = sources;
-			this.setLabel(this.sources);
+			//this.setLabel(this.sources);
 			console.log(this.sources);
 		})
 		.catch(erreur => console.log(erreur));
@@ -29,9 +29,7 @@ class SourcesCtrl {
 	private setLabel(sources) {
 		if(sources) {
 			sources.forEach(e => {
-				var st = this.parent.getSourceType(e.typeid);
-				e.label = st ? st.name : '';
-				this.setLabel(e.contents);
+				e.setLabel(this.parent);
 			});
 		}
 	}

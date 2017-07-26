@@ -9,8 +9,9 @@ import { GramAccueil } from './components/gram-accueil.component';
 import { GramPlaces } from './components/gram-places.component';
 import { GramSources } from './components/gram-sources.component';
 
-import { PlacesService } from './services/places.service';
-import { SourcesService } from './services/sources.service';
+import { PlacesService }		from './services/places.service';
+import { SourcesService }		from './services/sources.service';
+import { ReferentielService}	from './services/referentiel.service';
 
 import routesConfig from './routes';
 
@@ -23,6 +24,7 @@ angular
 	.module('grammi', ['ngRoute', 'angularTreeview'])
 	.service('placesService', PlacesService)
 	.service('sourcesService', SourcesService)
+	.service('referentielService', ReferentielService)
 	.component('gramMain', GramMain)
 	.component('gramHeader', GramHeader)
 	.component('gramAccueil', GramAccueil)

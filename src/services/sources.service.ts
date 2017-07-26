@@ -1,28 +1,36 @@
 /// <reference path="../../typings/index.d.ts" />
 
-import { ISourcesService } from './sources.service.interface';
+import { ISourcesService } 		from './sources.service.interface';
+import { IReferentielService } 	from './referentiel.service.interface';
+import { Repo }					from '../domain/Repo';
+import { Source }				from '../domain/Source';
 
 export class SourcesService implements ISourcesService {
 	$http : ng.IHttpService;
 	$q : ng.IQService;
+	ref : IReferentielService;
 	
-	constructor( $http: ng.IHttpService, $q: ng.IQService) {
+	constructor( $http: ng.IHttpService, $q: ng.IQService, referentielService: IReferentielService) {
 		this.$http = $http;
 		this.$q = $q;
+		this.ref = referentielService;
 	}
 	
 	public getFullSources() {
 		var deferred = this.$q.defer();
 		
 		this.$http.get('/api/repos/roots')
-		.then(response => { 
+		.then(response => {
+			var repos = [];
 			var i = response.data['repos'].length;
-			response.data['repos'].forEach( repo => {
+			response.data['repos'].forEach( brut => {
+				var repo : Repo = Repo.fromData(brut, this.ref);
 				this.getContents(repo._id)
-				.then(r => {
+				.then( r => {
 					repo.contents = r;
+					repos.push(repo);
 					if(--i == 0) {
-						deferred.resolve(response.data['repos'])
+						deferred.resolve(repos);
 					}
 				})
 				.catch(erreur => deferred.reject(erreur));
@@ -38,20 +46,26 @@ export class SourcesService implements ISourcesService {
 		
 		this.$http.get(`/api/repos/repo/${id}/sources`)
 		.then( response => {
-				var toreturn = response.data['sources'];
+				var sources = [];
+				response.data['sources'].forEach( brut => {
+					sources.push(Source.fromData(brut, this.ref));
+				})
 				this.$http.get(`/api/repos/repo/${id}/repos`)
 				.then( response => {
 					var i = response.data['repos'].length;
 					if(i == 0) {
-						deferred.resolve(toreturn);
+						deferred.resolve(sources);
 					}
-					response.data['repos'].forEach( repo => {
+					var repos = [];
+					response.data['repos'].forEach( brut => {
+						var repo : Repo = Repo.fromData(brut, this.ref);
 						this.getContents(repo._id)
-						.then(r => {
-							repo.contents = toreturn.concat(r);
+						.then( r => {
+							repo.contents = sources.concat(r);
+							repos.push(repo);
 							i--;
 							if(i == 0) {
-								deferred.resolve(response.data['repos']);
+								deferred.resolve(repos);
 							}
 						})
 						.catch(erreur => deferred.reject(erreur));						
@@ -78,7 +92,7 @@ export class SourcesService implements ISourcesService {
 		var deferred = this.$q.defer();
 		
 		this.$http.get('/api/repos/types')
-		.then(response => { deferred.resolve(response) })
+		.then(response => { deferred.resolve(response.data['repotypes']) })
 		.catch(erreur => deferred.reject(erreur));
 		
 		return deferred.promise;

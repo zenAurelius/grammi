@@ -14,14 +14,16 @@ webpackJsonp([0],[
 	var gram_sources_component_1 = __webpack_require__(13);
 	var places_service_1 = __webpack_require__(15);
 	var sources_service_1 = __webpack_require__(16);
-	var routes_1 = __webpack_require__(17);
-	__webpack_require__(18);
-	__webpack_require__(22);
+	var referentiel_service_1 = __webpack_require__(19);
+	var routes_1 = __webpack_require__(20);
+	__webpack_require__(21);
+	__webpack_require__(25);
 	var URL_REST_SERVER = 'http://localhost:3000/api';
 	angular
 	    .module('grammi', ['ngRoute', 'angularTreeview'])
 	    .service('placesService', places_service_1.PlacesService)
 	    .service('sourcesService', sources_service_1.SourcesService)
+	    .service('referentielService', referentiel_service_1.ReferentielService)
 	    .component('gramMain', gram_main_component_1.GramMain)
 	    .component('gramHeader', gram_header_component_1.GramHeader)
 	    .component('gramAccueil', gram_accueil_component_1.GramAccueil)
@@ -43,20 +45,26 @@ webpackJsonp([0],[
 	/// <reference path="../../typings/index.d.ts" />
 	var MainCtrl = (function () {
 	    /** @ngInject */
-	    function MainCtrl($location, sourcesService) {
+	    function MainCtrl($location, sourcesService, referentielService) {
 	        this.getSourceType = function (id) {
 	            return this.typeSource.find(function (element) { return element._id == id; });
+	        };
+	        this.getRepoType = function (id) {
+	            return this.typeRepo.find(function (element) { return element._id == id; });
 	        };
 	        this.goPlaces = function () { this.$location.path('/places'); };
 	        this.goSources = function () { this.$location.path('/sources'); };
 	        this.$location = $location;
 	        this.sourcesService = sourcesService;
+	        this.referentielService = referentielService;
 	    }
 	    // ON INIT ************************************************************************************
 	    MainCtrl.prototype.$onInit = function () {
 	        var _this = this;
 	        this.sourcesService.getSourceTypes()
-	            .then(function (r) { return _this.typeSource = r; });
+	            .then(function (r) { return _this.referentielService.initSourceTypes(r); });
+	        this.sourcesService.getRepoTypes()
+	            .then(function (r) { return _this.referentielService.initRepoTypes(r); });
 	    };
 	    return MainCtrl;
 	}());
@@ -167,7 +175,7 @@ webpackJsonp([0],[
 	        this.sourcesService.getFullSources()
 	            .then(function (sources) {
 	            _this.sources = sources;
-	            _this.setLabel(_this.sources);
+	            //this.setLabel(this.sources);
 	            console.log(_this.sources);
 	        })
 	            .catch(function (erreur) { return console.log(erreur); });
@@ -176,9 +184,7 @@ webpackJsonp([0],[
 	        var _this = this;
 	        if (sources) {
 	            sources.forEach(function (e) {
-	                var st = _this.parent.getSourceType(e.typeid);
-	                e.label = st ? st.name : '';
-	                _this.setLabel(e.contents);
+	                e.setLabel(_this.parent);
 	            });
 	        }
 	    };
@@ -261,28 +267,34 @@ webpackJsonp([0],[
 
 /***/ }),
 /* 16 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
 	/// <reference path="../../typings/index.d.ts" />
 	Object.defineProperty(exports, "__esModule", { value: true });
+	var Repo_1 = __webpack_require__(17);
+	var Source_1 = __webpack_require__(18);
 	var SourcesService = (function () {
-	    function SourcesService($http, $q) {
+	    function SourcesService($http, $q, referentielService) {
 	        this.$http = $http;
 	        this.$q = $q;
+	        this.ref = referentielService;
 	    }
 	    SourcesService.prototype.getFullSources = function () {
 	        var _this = this;
 	        var deferred = this.$q.defer();
 	        this.$http.get('/api/repos/roots')
 	            .then(function (response) {
+	            var repos = [];
 	            var i = response.data['repos'].length;
-	            response.data['repos'].forEach(function (repo) {
+	            response.data['repos'].forEach(function (brut) {
+	                var repo = Repo_1.Repo.fromData(brut, _this.ref);
 	                _this.getContents(repo._id)
 	                    .then(function (r) {
 	                    repo.contents = r;
+	                    repos.push(repo);
 	                    if (--i == 0) {
-	                        deferred.resolve(response.data['repos']);
+	                        deferred.resolve(repos);
 	                    }
 	                })
 	                    .catch(function (erreur) { return deferred.reject(erreur); });
@@ -296,20 +308,26 @@ webpackJsonp([0],[
 	        var deferred = this.$q.defer();
 	        this.$http.get("/api/repos/repo/" + id + "/sources")
 	            .then(function (response) {
-	            var toreturn = response.data['sources'];
+	            var sources = [];
+	            response.data['sources'].forEach(function (brut) {
+	                sources.push(Source_1.Source.fromData(brut, _this.ref));
+	            });
 	            _this.$http.get("/api/repos/repo/" + id + "/repos")
 	                .then(function (response) {
 	                var i = response.data['repos'].length;
 	                if (i == 0) {
-	                    deferred.resolve(toreturn);
+	                    deferred.resolve(sources);
 	                }
-	                response.data['repos'].forEach(function (repo) {
+	                var repos = [];
+	                response.data['repos'].forEach(function (brut) {
+	                    var repo = Repo_1.Repo.fromData(brut, _this.ref);
 	                    _this.getContents(repo._id)
 	                        .then(function (r) {
-	                        repo.contents = toreturn.concat(r);
+	                        repo.contents = sources.concat(r);
+	                        repos.push(repo);
 	                        i--;
 	                        if (i == 0) {
-	                            deferred.resolve(response.data['repos']);
+	                            deferred.resolve(repos);
 	                        }
 	                    })
 	                        .catch(function (erreur) { return deferred.reject(erreur); });
@@ -330,7 +348,7 @@ webpackJsonp([0],[
 	    SourcesService.prototype.getRepoTypes = function () {
 	        var deferred = this.$q.defer();
 	        this.$http.get('/api/repos/types')
-	            .then(function (response) { deferred.resolve(response); })
+	            .then(function (response) { deferred.resolve(response.data['repotypes']); })
 	            .catch(function (erreur) { return deferred.reject(erreur); });
 	        return deferred.promise;
 	    };
@@ -341,6 +359,93 @@ webpackJsonp([0],[
 
 /***/ }),
 /* 17 */
+/***/ (function(module, exports) {
+
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var Repo = (function () {
+	    function Repo(_id, type, place, date, repoId, contents) {
+	        this._id = _id;
+	        this.type = type;
+	        this.place = place;
+	        this.date = date;
+	        this.repoId = repoId;
+	        this.contents = contents;
+	    }
+	    Repo.fromData = function (data, ref) {
+	        var repo = new this(data._id, data.typeid, data.place, data.date, data.repo, []);
+	        repo.setLabel(ref);
+	        return repo;
+	    };
+	    Repo.prototype.setLabel = function (ref) {
+	        var t = ref.getRepoType(this.type);
+	        this.label = t ? t.name : "rien";
+	        if (this.place) {
+	            this.label = this.label + (" (" + this.place.name + ")");
+	        }
+	    };
+	    return Repo;
+	}());
+	exports.Repo = Repo;
+
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports) {
+
+	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var Source = (function () {
+	    function Source(_id, type, place, title, repoId) {
+	        this._id = _id;
+	        this.type = type;
+	        this.place = place;
+	        this.title = title;
+	        this.repoId = repoId;
+	    }
+	    Source.fromData = function (data, ref) {
+	        var source = new this(data._id, data.typeid, data.place, data.title, data.repo);
+	        source.setLabel(ref);
+	        return source;
+	    };
+	    Source.prototype.setLabel = function (ref) {
+	        var t = ref.getSourceType(this.type);
+	        this.label = t ? t.name : "rien";
+	    };
+	    return Source;
+	}());
+	exports.Source = Source;
+
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports) {
+
+	"use strict";
+	/// <reference path="../../typings/index.d.ts" />
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var ReferentielService = (function () {
+	    function ReferentielService() {
+	    }
+	    ReferentielService.prototype.initSourceTypes = function (types) {
+	        this.sourceTypes = types;
+	    };
+	    ReferentielService.prototype.initRepoTypes = function (types) {
+	        this.repoTypes = types;
+	    };
+	    ReferentielService.prototype.getSourceType = function (id) {
+	        return this.sourceTypes.find(function (element) { return element._id == id; });
+	    };
+	    ReferentielService.prototype.getRepoType = function (id) {
+	        return this.repoTypes.find(function (element) { return element._id == id; });
+	    };
+	    return ReferentielService;
+	}());
+	exports.ReferentielService = ReferentielService;
+
+
+/***/ }),
+/* 20 */
 /***/ (function(module, exports) {
 
 	"use strict";
@@ -368,16 +473,16 @@ webpackJsonp([0],[
 
 
 /***/ }),
-/* 18 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(19);
+	var content = __webpack_require__(22);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(21)(content, {});
+	var update = __webpack_require__(24)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -394,10 +499,10 @@ webpackJsonp([0],[
 	}
 
 /***/ }),
-/* 19 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(20)();
+	exports = module.exports = __webpack_require__(23)();
 	// imports
 
 
@@ -408,7 +513,7 @@ webpackJsonp([0],[
 
 
 /***/ }),
-/* 20 */
+/* 23 */
 /***/ (function(module, exports) {
 
 	/*
@@ -464,7 +569,7 @@ webpackJsonp([0],[
 
 
 /***/ }),
-/* 21 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/*
@@ -716,7 +821,7 @@ webpackJsonp([0],[
 
 
 /***/ }),
-/* 22 */
+/* 25 */
 /***/ (function(module, exports) {
 
 	/*
